@@ -8,10 +8,24 @@
     ".NETCoreApp,Version=v8.0": {
       "ptz hub/1.0.0": {
         "dependencies": {
+          "SixLabors.ImageSharp": "2.1.13",
           "System.Device.Gpio": "4.2.0"
         },
         "runtime": {
           "ptz hub.dll": {}
+        }
+      },
+      "Microsoft.NETCore.Platforms/5.0.0": {},
+      "SixLabors.ImageSharp/2.1.13": {
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "5.0.0",
+          "System.Text.Encoding.CodePages": "5.0.0"
+        },
+        "runtime": {
+          "lib/netcoreapp3.1/SixLabors.ImageSharp.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.1.13.0"
+          }
         }
       },
       "System.Device.Gpio/4.2.0": {
@@ -20,6 +34,12 @@
             "assemblyVersion": "4.2.0.0",
             "fileVersion": "4.200.26.16901"
           }
+        }
+      },
+      "System.Runtime.CompilerServices.Unsafe/5.0.0": {},
+      "System.Text.Encoding.CodePages/5.0.0": {
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "5.0.0"
         }
       }
     }
@@ -30,12 +50,40 @@
       "serviceable": false,
       "sha512": ""
     },
+    "Microsoft.NETCore.Platforms/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-VyPlqzH2wavqquTcYpkIIAQ6WdenuKoFN0BdYBbCWsclXacSOHNQn66Gt4z5NBqEYW0FAPm5rlvki9ZiCij5xQ==",
+      "path": "microsoft.netcore.platforms/5.0.0",
+      "hashPath": "microsoft.netcore.platforms.5.0.0.nupkg.sha512"
+    },
+    "SixLabors.ImageSharp/2.1.13": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zmVHZR13XE477TBAVXE71VcMhqhiv1PbzMWIfuIDytVdBPl3KZlvYYBkqcuQSDdszVY2XHanW98VmDffoNzSSw==",
+      "path": "sixlabors.imagesharp/2.1.13",
+      "hashPath": "sixlabors.imagesharp.2.1.13.nupkg.sha512"
+    },
     "System.Device.Gpio/4.2.0": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-MbacJrE7B+aIIAKO6YFUB9RNHneaobwnw0DhVMGbjGsMN82i0+HYCfSRlkuEbsD4HlzTcIlqIFYfkph3xFq2sQ==",
       "path": "system.device.gpio/4.2.0",
       "hashPath": "system.device.gpio.4.2.0.nupkg.sha512"
+    },
+    "System.Runtime.CompilerServices.Unsafe/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ZD9TMpsmYJLrxbbmdvhwt9YEgG5WntEnZ/d1eH8JBX9LBp+Ju8BSBhUGbZMNVHHomWo2KVImJhTDl2hIgw/6MA==",
+      "path": "system.runtime.compilerservices.unsafe/5.0.0",
+      "hashPath": "system.runtime.compilerservices.unsafe.5.0.0.nupkg.sha512"
+    },
+    "System.Text.Encoding.CodePages/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-NyscU59xX6Uo91qvhOs2Ccho3AR2TnZPomo1Z0K6YpyztBPM/A5VbkzOO19sy3A3i1TtEnTxA7bCe3Us+r5MWg==",
+      "path": "system.text.encoding.codepages/5.0.0",
+      "hashPath": "system.text.encoding.codepages.5.0.0.nupkg.sha512"
     }
   }
 }

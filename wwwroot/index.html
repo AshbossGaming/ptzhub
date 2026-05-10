@@ -124,6 +124,7 @@
       <div class="btn-row">
         <button class="btn btn-primary" onclick="center()">Center</button>
         <button class="btn btn-secondary" onclick="toggleVflip()" id="vflipBtn">V-Flip Off</button>
+        <button class="btn btn-secondary" onclick="toggleAutoFocus()" id="afBtn">AF Off</button>
         <button class="btn btn-secondary" onclick="savePreset()">Save Preset</button>
         <button class="btn btn-danger" onclick="stop()">Stop</button>
       </div>
@@ -140,6 +141,7 @@
     <div class="status-item">Focus <span id="focusDisplay">--</span></div>
     <div class="status-item">Crop <span id="cropDisplay">1.0</span>&times;</div>
     <div class="status-item">V-Flip <span id="vflipDisplay">Off</span></div>
+    <div class="status-item">AF <span id="afDisplay">Off</span></div>
     <div class="status-item">Rotation <span id="rotationDisplay">0</span>&deg;</div>
     <button class="btn btn-secondary" onclick="cycleRotation()" id="rotationBtn" style="margin-left:auto">Rotate 180</button>
     <button class="btn btn-secondary" onclick="fetchStatus()">Refresh</button>
@@ -147,7 +149,7 @@
 </div>
 
 <script>
-let current = { pan: 90, tilt: 90, zoom: 1, focus: 50, vflip: false, digitalCrop: 1 };
+let current = { pan: 90, tilt: 90, zoom: 1, focus: 50, vflip: false, digitalCrop: 1, autoFocus: false };
 
 async function api(endpoint, opts = {}) {
   const res = await fetch(endpoint, {
@@ -168,6 +170,8 @@ async function fetchStatus() {
     document.getElementById('cropDisplay').textContent = (current.digitalCrop ?? 1).toFixed(1);
     document.getElementById('vflipDisplay').textContent = current.vflip ? 'On' : 'Off';
     document.getElementById('vflipBtn').textContent = current.vflip ? 'V-Flip On' : 'V-Flip Off';
+    document.getElementById('afDisplay').textContent = current.autoFocus ? 'On' : 'Off';
+    document.getElementById('afBtn').textContent = current.autoFocus ? 'AF On' : 'AF Off';
     document.getElementById('rotationDisplay').textContent = current.rotation ?? 0;
     document.getElementById('rotationBtn').textContent = (current.rotation ?? 0) === 0 ? 'Rotate 180' : 'Rotate 0';
     document.getElementById('zoom').value = current.zoom;
@@ -297,15 +301,25 @@ async function toggleVflip() {
   const next = !current.vflip;
   try {
     const res = await fetch('/api/ptz/option', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `vflip=${next}`
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `vflip=${next}`
     });
     const state = await res.json();
     current.vflip = state.vflip;
     document.getElementById('vflipDisplay').textContent = state.vflip ? 'On' : 'Off';
     document.getElementById('vflipBtn').textContent = state.vflip ? 'V-Flip On' : 'V-Flip Off';
   } catch (e) { console.error('vflip:', e); }
+}
+
+async function toggleAutoFocus() {
+  const next = !current.autoFocus;
+  try {
+    current = await api('/api/ptz/state', {
+      method: 'POST',
+      body: JSON.stringify({ autoFocus: next })
+    });
+    document.getElementById('afDisplay').textContent = current.autoFocus ? 'On' : 'Off';
+    document.getElementById('afBtn').textContent = current.autoFocus ? 'AF On' : 'AF Off';
+  } catch (e) { console.error('autofocus:', e); }
 }
 
 window.onload = () => { fetchStatus(); loadPresets(); };

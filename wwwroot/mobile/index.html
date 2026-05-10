@@ -36,7 +36,7 @@
   }
   .stream .info-grid div { display: flex; justify-content: space-between; gap: 4px; }
   .stream .info-grid span { font-weight: 600; color: #e94560; }
-  .stream .no-feed { color: #555; font-size: .85rem; text-align: center; }
+  .stream .no-feed { display: none; color: #555; font-size: .85rem; text-align: center; }
   .stream .no-feed strong { display: block; font-size: 1.1rem; color: #888; margin-bottom: 4px; }
 
   .controls { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
@@ -113,14 +113,14 @@
 <body>
 
 <div class="stream" id="streamContainer">
-  <img id="streamImg" src="" alt="" style="display:none">
+  <img id="streamImg" src="/stream" alt="Camera Feed">
   <div class="live-badge">LIVE</div>
   <div class="overlay">
     <div class="no-feed" id="noFeed">
       <strong>&#9678; Camera Feed</strong>
       <span id="feedStatus">Connecting...</span>
     </div>
-    <div class="info-grid" id="infoGrid" style="display:none">
+    <div class="info-grid" id="infoGrid">
       <div>P <span id="sPan">--</span></div>
       <div>T <span id="sTilt">--</span></div>
       <div>Z <span id="sZoom">--</span></div>
@@ -167,6 +167,7 @@
   <div class="btn-row">
     <button class="btn btn-primary" onclick="center()">Center</button>
     <button class="btn btn-secondary" onclick="toggleVflip()" id="vflipBtn">V-Flip</button>
+    <button class="btn btn-secondary" onclick="toggleAutoFocus()" id="afBtn">AF</button>
     <button class="btn btn-secondary" onclick="cycleRotation()" id="rotBtn">Rot 180</button>
     <button class="btn btn-danger" onclick="stop()">Stop</button>
   </div>
@@ -178,6 +179,7 @@
   <div class="status-bar">
     Pan <span id="panDisplay">--</span>&deg;
     Tilt <span id="tiltDisplay">--</span>&deg;
+    AF <span id="afDisplay">Off</span>
     VF <span id="vflipDisplay">Off</span>
   </div>
 
@@ -188,8 +190,8 @@
 </div>
 
 <script>
-let current = { pan: 90, tilt: 90, zoom: 1, focus: 50, vflip: false, digitalCrop: 1 };
-let streamInterval = null;
+let current = { pan: 90, tilt: 90, zoom: 1, focus: 50, vflip: false, digitalCrop: 1, autoFocus: false };
+let stateInterval = null;
 
 async function api(endpoint, opts = {}) {
   const res = await fetch(endpoint, {
@@ -209,21 +211,6 @@ function updateOverlay() {
   document.getElementById('sRot').textContent = current.rotation ?? 0;
 }
 
-async function fetchStreamState() {
-  try {
-    const r = await fetch('/stream');
-    if (!r.ok) return;
-    const data = await r.json();
-    Object.assign(current, data);
-    updateOverlay();
-    document.getElementById('feedStatus').textContent = 'Connected';
-    document.getElementById('noFeed').style.display = 'none';
-    document.getElementById('infoGrid').style.display = 'grid';
-  } catch (e) {
-    document.getElementById('feedStatus').textContent = 'Disconnected';
-  }
-}
-
 async function fetchStatus() {
   try {
     current = await api('/api/ptz/state');
@@ -231,6 +218,8 @@ async function fetchStatus() {
     document.getElementById('tiltDisplay').textContent = Math.round(current.tilt);
     document.getElementById('vflipDisplay').textContent = current.vflip ? 'On' : 'Off';
     document.getElementById('vflipBtn').textContent = current.vflip ? 'V-Flip On' : 'V-Flip';
+    document.getElementById('afDisplay').textContent = current.autoFocus ? 'On' : 'Off';
+    document.getElementById('afBtn').textContent = current.autoFocus ? 'AF On' : 'AF';
     document.getElementById('rotBtn').textContent = (current.rotation ?? 0) === 0 ? 'Rot 180' : 'Rot 0';
     document.getElementById('zoom').value = current.zoom;
     document.getElementById('focus').value = current.focus;
@@ -241,7 +230,6 @@ async function fetchStatus() {
     updateOverlay();
     document.getElementById('feedStatus').textContent = 'Connected';
     document.getElementById('noFeed').style.display = 'none';
-    document.getElementById('infoGrid').style.display = 'grid';
   } catch (e) { console.error('fetchStatus:', e); }
 }
 
@@ -360,12 +348,24 @@ async function toggleVflip() {
   } catch (e) { console.error('vflip:', e); }
 }
 
-function startStreamPoll() {
-  fetchStreamState();
-  streamInterval = setInterval(fetchStreamState, 2000);
+async function toggleAutoFocus() {
+  const next = !current.autoFocus;
+  try {
+    current = await api('/api/ptz/state', {
+      method: 'POST',
+      body: JSON.stringify({ autoFocus: next })
+    });
+    document.getElementById('afDisplay').textContent = current.autoFocus ? 'On' : 'Off';
+    document.getElementById('afBtn').textContent = current.autoFocus ? 'AF On' : 'AF';
+  } catch (e) { console.error('autofocus:', e); }
 }
 
-window.onload = () => { fetchStatus(); loadPresets(); startStreamPoll(); };
+function startPoll() {
+  fetchStatus();
+  stateInterval = setInterval(fetchStatus, 3000);
+}
+
+window.onload = () => { loadPresets(); startPoll(); };
 </script>
 </body>
 </html>

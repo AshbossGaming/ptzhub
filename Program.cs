@@ -5,9 +5,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSingleton<IPca9685Service, Pca9685Service>();
-builder.Services.AddSingleton<IServoService, ServoService>();
 builder.Services.AddSingleton<ICameraService, CameraService>();
 builder.Services.AddSingleton<IPresetService, PresetService>();
+builder.Services.AddSingleton<IServoService, ServoService>();
+builder.Services.AddSingleton<CameraStreamService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<CameraStreamService>());
 
 builder.WebHost.ConfigureKestrel(options =>
 {
@@ -24,19 +26,21 @@ app.UseDefaultFiles(new DefaultFilesOptions { RequestPath = "/mobile" });
 app.UseStaticFiles(new StaticFileOptions { RequestPath = "/mobile" });
 app.MapControllers();
 
-app.MapGet("/stream", (ICameraService camera, IServoService servo) =>
+app.MapGet("/stream", async (HttpContext ctx, CameraStreamService stream) =>
 {
-    var state = new
+    ctx.Response.ContentType = "multipart/x-mixed-replace; boundary=frame";
+    ctx.Response.Headers.Append("Cache-Control", "no-cache");
+    ctx.Response.Headers.Append("Connection", "keep-alive");
+
+    var ct = ctx.RequestAborted;
+    await foreach (var frame in stream.Reader.ReadAllAsync(ct))
     {
-        pan = Math.Round(servo.Pan, 1),
-        tilt = Math.Round(servo.Tilt, 1),
-        zoom = Math.Round(camera.Zoom, 1),
-        focus = camera.Focus,
-        rotation = camera.Rotation,
-        digitalCrop = Math.Round(camera.DigitalCrop, 1),
-        vflip = camera.Vflip
-    };
-    return Results.Json(state);
+        var header = $"--frame\r\nContent-Type: image/jpeg\r\nContent-Length: {frame.Length}\r\n\r\n";
+        await ctx.Response.WriteAsync(header, ct);
+        await ctx.Response.Body.WriteAsync(frame, ct);
+        await ctx.Response.WriteAsync("\r\n", ct);
+        await ctx.Response.Body.FlushAsync(ct);
+    }
 });
 
 app.Run();

@@ -28,3 +28,5 @@ C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\presets.json
 C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\System.Device.Gpio.dll
 C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.csproj.AssemblyReference.cache
 C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.csproj.Up2Date
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.sourcelink.json
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\SixLabors.ImageSharp.dll

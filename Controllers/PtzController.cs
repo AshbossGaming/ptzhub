@@ -44,6 +44,8 @@ public class PtzController : ControllerBase
             await _camera.SetDigitalCropAsync(request.DigitalCrop.Value);
         if (request.Vflip.HasValue)
             await _camera.SetVflipAsync(request.Vflip.Value);
+        if (request.AutoFocus.HasValue)
+            await _camera.SetAutoFocusAsync(request.AutoFocus.Value);
 
         return Ok(MakeState());
     }
@@ -58,7 +60,8 @@ public class PtzController : ControllerBase
             focus = _camera.Focus,
             vflip = _camera.Vflip,
             rotation = _camera.Rotation,
-            digitalCrop = Math.Round(_camera.DigitalCrop, 1)
+            digitalCrop = Math.Round(_camera.DigitalCrop, 1),
+            autoFocus = _camera.AutoFocus
         };
     }
 
@@ -135,6 +138,7 @@ public class PtzStateRequest
     public int? Speed { get; init; }
     public double? DigitalCrop { get; init; }
     public bool? Vflip { get; init; }
+    public bool? AutoFocus { get; init; }
 }
 
 public class CenterRequest

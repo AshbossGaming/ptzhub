@@ -7,9 +7,11 @@ public interface ICameraService
     int Rotation { get; }
     double DigitalCrop { get; }
     bool Vflip { get; }
+    bool AutoFocus { get; }
     Task SetZoomAsync(double zoom);
     Task SetFocusAsync(int focus);
     Task SetRotationAsync(int rotation);
     Task SetDigitalCropAsync(double crop);
     Task SetVflipAsync(bool flip);
+    Task SetAutoFocusAsync(bool enabled);
 }

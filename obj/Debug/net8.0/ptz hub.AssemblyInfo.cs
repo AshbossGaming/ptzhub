@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ptz hub")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1242b5f122bf008678161d03f220c37b82c092a2")]
 [assembly: System.Reflection.AssemblyProductAttribute("ptz hub")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ptz hub")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
