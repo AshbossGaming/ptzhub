@@ -1,0 +1,6 @@
+@ptz_hub_HostAddress = http://localhost:5239
+
+GET {{ptz_hub_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

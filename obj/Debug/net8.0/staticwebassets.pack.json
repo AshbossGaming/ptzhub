@@ -1,0 +1,29 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\ash12\\RiderProjects\\ptz hub\\ptz hub\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "C:\\Users\\ash12\\RiderProjects\\ptz hub\\ptz hub\\wwwroot\\mobile\\index.html",
+      "PackagePath": "staticwebassets\\mobile\\index.html"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.ptz hub.props",
+      "PackagePath": "build\\ptz hub.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.ptz hub.props",
+      "PackagePath": "buildMultiTargeting\\ptz hub.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.ptz hub.props",
+      "PackagePath": "buildTransitive\\ptz hub.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.ptz hub.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

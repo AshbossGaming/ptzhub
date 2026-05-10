@@ -1,0 +1,58 @@
+{
+  "Version": 1,
+  "Hash": "MpinIpT16qSKDhI3ot13zd7+XDYrUyC5DfdMyiKv5d4=",
+  "Source": "ptz hub",
+  "BasePath": "_content/ptz hub",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "ptz hub\\wwwroot",
+      "Source": "ptz hub",
+      "ContentRoot": "C:\\Users\\ash12\\RiderProjects\\ptz hub\\ptz hub\\wwwroot\\",
+      "BasePath": "_content/ptz hub",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\ash12\\RiderProjects\\ptz hub\\ptz hub\\wwwroot\\index.html",
+      "SourceId": "ptz hub",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ash12\\RiderProjects\\ptz hub\\ptz hub\\wwwroot\\",
+      "BasePath": "_content/ptz hub",
+      "RelativePath": "index.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\index.html"
+    },
+    {
+      "Identity": "C:\\Users\\ash12\\RiderProjects\\ptz hub\\ptz hub\\wwwroot\\mobile\\index.html",
+      "SourceId": "ptz hub",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\ash12\\RiderProjects\\ptz hub\\ptz hub\\wwwroot\\",
+      "BasePath": "_content/ptz hub",
+      "RelativePath": "mobile/index.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\mobile\\index.html"
+    }
+  ]
+}

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>PTZ Mobile</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0d0d1a; color: #e0e0e0; touch-action: manipulation;
+    display: flex; flex-direction: column;
+  }
+
+  .stream { position: relative; background: #000; flex: 0 0 35%; min-height: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .stream img { width: 100%; height: 100%; object-fit: contain; }
+  .stream .overlay {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .stream .live-badge {
+    position: absolute; top: 8px; left: 8px;
+    background: #e94560; color: #fff; font-size: .65rem; font-weight: 700;
+    padding: 2px 8px; border-radius: 3px; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .stream .live-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
+  .stream .info-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px 12px;
+    font-size: .7rem; color: rgba(255,255,255,.85); text-shadow: 0 1px 4px rgba(0,0,0,.8);
+    background: rgba(0,0,0,.4); padding: 6px 12px; border-radius: 8px; backdrop-filter: blur(4px);
+  }
+  .stream .info-grid div { display: flex; justify-content: space-between; gap: 4px; }
+  .stream .info-grid span { font-weight: 600; color: #e94560; }
+  .stream .no-feed { color: #555; font-size: .85rem; text-align: center; }
+  .stream .no-feed strong { display: block; font-size: 1.1rem; color: #888; margin-bottom: 4px; }
+
+  .controls { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+  .controls::-webkit-scrollbar { width: 3px; }
+  .controls::-webkit-scrollbar-thumb { background: #e94560; border-radius: 2px; }
+
+  .row { display: flex; gap: 10px; align-items: center; }
+
+  .cross {
+    flex: 0 0 150px; height: 150px;
+    display: grid; grid-template-areas:
+      ".    up   ."
+      "left mid  right"
+      ".    down .";
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 2px;
+  }
+  .cross button {
+    border: 1px solid #0f3460; background: #1a1a3e; color: #e0e0e0;
+    font-size: 1.2rem; cursor: pointer; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .cross button:active { background: #e94560; transform: scale(.9); }
+  .cross .up    { grid-row: 1; grid-column: 2; border-bottom: none; border-radius: 6px 6px 0 0; }
+  .cross .left  { grid-row: 2; grid-column: 1; border-right: none;  border-radius: 6px 0 0 6px; }
+  .cross .mid   { grid-row: 2; grid-column: 2; background: #0f3460; cursor: default; font-size: .6rem; border-radius: 0; }
+  .cross .mid:active { background: #0f3460; transform: none; }
+  .cross .right { grid-row: 2; grid-column: 3; border-left: none;  border-radius: 0 6px 6px 0; }
+  .cross .down  { grid-row: 3; grid-column: 2; border-top: none;   border-radius: 0 0 6px 6px; }
+
+  .sliders { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .slider-group label { display: flex; justify-content: space-between; font-size: .75rem; }
+  .slider-group label span { color: #e94560; font-weight: 600; }
+  input[type=range] { width: 100%; height: 4px; -webkit-appearance: none; appearance: none; background: #0f3460; border-radius: 2px; outline: none; }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 18px; height: 18px;
+    border-radius: 50%; background: #e94560; cursor: pointer; border: 2px solid #fff;
+  }
+  input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #e94560; cursor: pointer; border: 2px solid #fff; }
+
+  .btn-row { display: flex; gap: 4px; flex-wrap: wrap; }
+  .btn {
+    flex: 1; min-width: 60px; padding: 8px 4px; border: none; border-radius: 6px; cursor: pointer;
+    font-size: .7rem; font-weight: 600; text-align: center;
+    transition: background .15s; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  }
+  .btn:active { transform: scale(.95); }
+  .btn-primary { background: #e94560; color: #fff; }
+  .btn-primary:hover { background: #ff6b81; }
+  .btn-secondary { background: #0f3460; color: #e0e0e0; }
+  .btn-secondary:hover { background: #1a4a8a; }
+  .btn-danger { background: #533; color: #e0e0e0; }
+  .btn-danger:hover { background: #744; }
+
+  .status-bar {
+    display: flex; flex-wrap: wrap; gap: 2px 10px; font-size: .65rem;
+    background: #111; padding: 6px 10px; border-radius: 6px;
+  }
+  .status-bar span { color: #e94560; font-weight: 600; }
+
+  .preset-section { margin-top: 2px; }
+  .preset-section h3 { font-size: .7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .preset-list { display: flex; gap: 4px; flex-wrap: wrap; }
+  .preset-tag {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: #0f3460; padding: 3px 8px; border-radius: 4px; font-size: .7rem;
+  }
+  .preset-tag .del { color: #e94560; cursor: pointer; font-weight: 700; }
+  .preset-tag:active { background: #1a4a8a; }
+</style>
+</head>
+<body>
+
+<div class="stream" id="streamContainer">
+  <img id="streamImg" src="" alt="" style="display:none">
+  <div class="live-badge">LIVE</div>
+  <div class="overlay">
+    <div class="no-feed" id="noFeed">
+      <strong>&#9678; Camera Feed</strong>
+      <span id="feedStatus">Connecting...</span>
+    </div>
+    <div class="info-grid" id="infoGrid" style="display:none">
+      <div>P <span id="sPan">--</span></div>
+      <div>T <span id="sTilt">--</span></div>
+      <div>Z <span id="sZoom">--</span></div>
+      <div>F <span id="sFocus">--</span></div>
+      <div>C <span id="sCrop">--</span></div>
+      <div>R <span id="sRot">--</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="row">
+    <div class="cross">
+      <button class="up"    onclick="move(0,-15)">&#9650;</button>
+      <button class="left"  onclick="move(-15,0)">&#9664;</button>
+      <button class="mid"   onclick="">&#9678;</button>
+      <button class="right" onclick="move(15,0)">&#9654;</button>
+      <button class="down"  onclick="move(0,15)">&#9660;</button>
+    </div>
+    <div class="sliders">
+      <div class="slider-group">
+        <label>Speed <span id="speedVal">45</span></label>
+        <input type="range" id="speed" min="5" max="180" step="5" value="45"
+               oninput="document.getElementById('speedVal').textContent=this.value">
+      </div>
+      <div class="slider-group">
+        <label>Zoom <span id="zoomVal">1.0</span></label>
+        <input type="range" id="zoom" min="1" max="10" step="0.1" value="1"
+               onchange="sendState()" oninput="document.getElementById('zoomVal').textContent=parseFloat(this.value).toFixed(1)">
+      </div>
+      <div class="slider-group">
+        <label>Focus <span id="focusVal">50</span></label>
+        <input type="range" id="focus" min="0" max="100" step="1" value="50"
+               onchange="sendState()" oninput="document.getElementById('focusVal').textContent=this.value">
+      </div>
+      <div class="slider-group">
+        <label>Crop <span id="cropVal">1.0</span></label>
+        <input type="range" id="crop" min="1" max="4" step="0.1" value="1"
+               onchange="sendState()" oninput="document.getElementById('cropVal').textContent=parseFloat(this.value).toFixed(1)">
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="center()">Center</button>
+    <button class="btn btn-secondary" onclick="toggleVflip()" id="vflipBtn">V-Flip</button>
+    <button class="btn btn-secondary" onclick="cycleRotation()" id="rotBtn">Rot 180</button>
+    <button class="btn btn-danger" onclick="stop()">Stop</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="savePreset()">Save</button>
+    <button class="btn btn-secondary" onclick="fetchStatus()">Refresh</button>
+  </div>
+
+  <div class="status-bar">
+    Pan <span id="panDisplay">--</span>&deg;
+    Tilt <span id="tiltDisplay">--</span>&deg;
+    VF <span id="vflipDisplay">Off</span>
+  </div>
+
+  <div class="preset-section">
+    <h3>Presets</h3>
+    <div class="preset-list" id="presetList"></div>
+  </div>
+</div>
+
+<script>
+let current = { pan: 90, tilt: 90, zoom: 1, focus: 50, vflip: false, digitalCrop: 1 };
+let streamInterval = null;
+
+async function api(endpoint, opts = {}) {
+  const res = await fetch(endpoint, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+function updateOverlay() {
+  document.getElementById('sPan').textContent = Math.round(current.pan);
+  document.getElementById('sTilt').textContent = Math.round(current.tilt);
+  document.getElementById('sZoom').textContent = current.zoom.toFixed(1);
+  document.getElementById('sFocus').textContent = current.focus;
+  document.getElementById('sCrop').textContent = (current.digitalCrop ?? 1).toFixed(1);
+  document.getElementById('sRot').textContent = current.rotation ?? 0;
+}
+
+async function fetchStreamState() {
+  try {
+    const r = await fetch('/stream');
+    if (!r.ok) return;
+    const data = await r.json();
+    Object.assign(current, data);
+    updateOverlay();
+    document.getElementById('feedStatus').textContent = 'Connected';
+    document.getElementById('noFeed').style.display = 'none';
+    document.getElementById('infoGrid').style.display = 'grid';
+  } catch (e) {
+    document.getElementById('feedStatus').textContent = 'Disconnected';
+  }
+}
+
+async function fetchStatus() {
+  try {
+    current = await api('/api/ptz/state');
+    document.getElementById('panDisplay').textContent = Math.round(current.pan);
+    document.getElementById('tiltDisplay').textContent = Math.round(current.tilt);
+    document.getElementById('vflipDisplay').textContent = current.vflip ? 'On' : 'Off';
+    document.getElementById('vflipBtn').textContent = current.vflip ? 'V-Flip On' : 'V-Flip';
+    document.getElementById('rotBtn').textContent = (current.rotation ?? 0) === 0 ? 'Rot 180' : 'Rot 0';
+    document.getElementById('zoom').value = current.zoom;
+    document.getElementById('focus').value = current.focus;
+    document.getElementById('crop').value = current.digitalCrop ?? 1;
+    document.getElementById('zoomVal').textContent = current.zoom.toFixed(1);
+    document.getElementById('focusVal').textContent = current.focus;
+    document.getElementById('cropVal').textContent = (current.digitalCrop ?? 1).toFixed(1);
+    updateOverlay();
+    document.getElementById('feedStatus').textContent = 'Connected';
+    document.getElementById('noFeed').style.display = 'none';
+    document.getElementById('infoGrid').style.display = 'grid';
+  } catch (e) { console.error('fetchStatus:', e); }
+}
+
+async function move(dPan, dTilt) {
+  const speed = parseInt(document.getElementById('speed').value, 10);
+  if (current.tilt > 90) { dPan = -dPan; dTilt = -dTilt; }
+  const pan = Math.min(180, Math.max(0, current.pan + dPan));
+  const tilt = Math.min(180, Math.max(0, current.tilt + dTilt));
+  try {
+    current = await api('/api/ptz/state', {
+      method: 'POST',
+      body: JSON.stringify({ pan, tilt, speed })
+    });
+    document.getElementById('panDisplay').textContent = Math.round(current.pan);
+    document.getElementById('tiltDisplay').textContent = Math.round(current.tilt);
+    updateOverlay();
+  } catch (e) { console.error('move:', e); }
+}
+
+async function sendState() {
+  const zoom = parseFloat(document.getElementById('zoom').value);
+  const focus = parseInt(document.getElementById('focus').value, 10);
+  const crop = parseFloat(document.getElementById('crop').value);
+  const speed = parseInt(document.getElementById('speed').value, 10);
+  try {
+    current = await api('/api/ptz/state', {
+      method: 'POST',
+      body: JSON.stringify({ pan: current.pan, tilt: current.tilt, zoom, focus, digitalCrop: crop, vflip: current.vflip, speed })
+    });
+    updateOverlay();
+  } catch (e) { console.error('sendState:', e); }
+}
+
+async function center() {
+  const speed = parseInt(document.getElementById('speed').value, 10);
+  try {
+    await api('/api/ptz/center', { method: 'POST', body: JSON.stringify({ speed }) });
+    current.pan = 90; current.tilt = 90;
+    document.getElementById('panDisplay').textContent = '90';
+    document.getElementById('tiltDisplay').textContent = '90';
+    updateOverlay();
+  } catch (e) { console.error('center:', e); }
+}
+
+async function stop() {
+  try { await api('/api/ptz/stop', { method: 'POST' }); }
+  catch (e) { console.error('stop:', e); }
+}
+
+async function savePreset() {
+  const name = prompt('Preset name:');
+  if (!name) return;
+  try {
+    await api('/api/ptz/presets', { method: 'POST', body: JSON.stringify({ name, pan: current.pan, tilt: current.tilt }) });
+    loadPresets();
+  } catch (e) { console.error('savePreset:', e); }
+}
+
+async function recallPreset(name) {
+  const speed = parseInt(document.getElementById('speed').value, 10);
+  try {
+    const r = await api(`/api/ptz/presets/${name}`, { method: 'POST', body: JSON.stringify({ speed }) });
+    current.pan = r.pan; current.tilt = r.tilt;
+    document.getElementById('panDisplay').textContent = Math.round(r.pan);
+    document.getElementById('tiltDisplay').textContent = Math.round(r.tilt);
+    updateOverlay();
+  } catch (e) { console.error('recallPreset:', e); }
+}
+
+async function deletePreset(name) {
+  try { await fetch(`/api/ptz/presets/${name}`, { method: 'DELETE' }); loadPresets(); }
+  catch (e) { console.error('deletePreset:', e); }
+}
+
+async function loadPresets() {
+  try {
+    const list = await api('/api/ptz/presets');
+    const el = document.getElementById('presetList');
+    el.innerHTML = '';
+    for (const [name] of Object.entries(list)) {
+      const tag = document.createElement('span');
+      tag.className = 'preset-tag';
+      tag.onclick = () => recallPreset(name);
+      tag.innerHTML = `${name} <span class="del" onclick="event.stopPropagation();deletePreset('${name}')">&times;</span>`;
+      el.appendChild(tag);
+    }
+  } catch (e) { console.error('loadPresets:', e); }
+}
+
+async function cycleRotation() {
+  const next = { 0: 180, 180: 0 };
+  const currentRot = current.rotation || 0;
+  const target = next[currentRot] ?? 0;
+  try {
+    const res = await fetch('/api/ptz/option', {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `rotation=${target}`
+    });
+    const state = await res.json();
+    current.rotation = state.rotation;
+    document.getElementById('rotBtn').textContent = state.rotation === 0 ? 'Rot 180' : 'Rot 0';
+    updateOverlay();
+  } catch (e) { console.error('rotation:', e); }
+}
+
+async function toggleVflip() {
+  const next = !current.vflip;
+  try {
+    const res = await fetch('/api/ptz/option', {
+      method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `vflip=${next}`
+    });
+    const state = await res.json();
+    current.vflip = state.vflip;
+    document.getElementById('vflipDisplay').textContent = state.vflip ? 'On' : 'Off';
+    document.getElementById('vflipBtn').textContent = state.vflip ? 'V-Flip On' : 'V-Flip';
+    updateOverlay();
+  } catch (e) { console.error('vflip:', e); }
+}
+
+function startStreamPoll() {
+  fetchStreamState();
+  streamInterval = setInterval(fetchStreamState, 2000);
+}
+
+window.onload = () => { fetchStatus(); loadPresets(); startStreamPoll(); };
+</script>
+</body>
+</html>

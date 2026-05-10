@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PTZ Control</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a2e; color: #e0e0e0; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; padding: 1rem;
+  }
+  .container {
+    background: #16213e; border-radius: 20px; padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4); max-width: 750px; width: 100%;
+  }
+  h1 { text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; color: #e94560; letter-spacing: 1px; }
+
+  .row { display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+
+  .cross {
+    position: relative; width: 220px; height: 220px; flex-shrink: 0;
+    display: grid; grid-template-areas:
+      ".    up   ."
+      "left mid  right"
+      ".    down .";
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 0;
+  }
+  .cross button {
+    border: 2px solid #0f3460; background: #1a1a3e; color: #e0e0e0;
+    font-size: 1.4rem; cursor: pointer; border-radius: 8px;
+    transition: background .15s, transform .1s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cross button:hover { background: #0f3460; }
+  .cross button:active { background: #e94560; transform: scale(.92); }
+  .cross .up    { grid-row: 1; grid-column: 2; border-bottom: none; border-radius: 8px 8px 0 0; }
+  .cross .left  { grid-row: 2; grid-column: 1; border-right: none;  border-radius: 8px 0 0 8px; }
+  .cross .mid   { grid-row: 2; grid-column: 2; background: #0f3460; cursor: default; font-size: .7rem; border-radius: 0; }
+  .cross .mid:hover { background: #0f3460; }
+  .cross .right { grid-row: 2; grid-column: 3; border-left: none;  border-radius: 0 8px 8px 0; }
+  .cross .down  { grid-row: 3; grid-column: 2; border-top: none;   border-radius: 0 0 8px 8px; }
+
+  .controls { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 1rem; }
+
+  .slider-group label { display: flex; justify-content: space-between; font-size: .9rem; margin-bottom: .3rem; }
+  .slider-group label span { color: #e94560; font-weight: 600; }
+
+  input[type=range] { width: 100%; height: 6px; -webkit-appearance: none; appearance: none; background: #0f3460; border-radius: 3px; outline: none; }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 20px; height: 20px;
+    border-radius: 50%; background: #e94560; cursor: pointer; border: 2px solid #fff;
+  }
+  input[type=range]::-webkit-slider-thumb:hover { background: #ff6b81; }
+  input[type=range]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #e94560; cursor: pointer; border: 2px solid #fff; }
+
+  .btn-row { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .btn {
+    padding: .5rem 1rem; border: none; border-radius: 8px; cursor: pointer;
+    font-size: .8rem; font-weight: 600; transition: background .15s, transform .1s;
+  }
+  .btn:active { transform: scale(.95); }
+  .btn-primary { background: #e94560; color: #fff; }
+  .btn-primary:hover { background: #ff6b81; }
+  .btn-secondary { background: #0f3460; color: #e0e0e0; }
+  .btn-secondary:hover { background: #1a4a8a; }
+  .btn-danger { background: #533; color: #e0e0e0; }
+  .btn-danger:hover { background: #744; }
+
+  .status-panel {
+    margin-top: 1.5rem; padding-top: 1.2rem; border-top: 1px solid #0f3460;
+    display: flex; flex-wrap: wrap; gap: .8rem 1.5rem; align-items: center;
+  }
+  .status-item { font-size: .85rem; }
+  .status-item span { color: #e94560; font-weight: 600; }
+
+  .preset-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #0f3460; }
+  .preset-section h3 { font-size: .85rem; color: #888; margin-bottom: .5rem; text-transform: uppercase; letter-spacing: 1px; }
+  .preset-list { display: flex; gap: .4rem; flex-wrap: wrap; }
+  .preset-tag {
+    display: inline-flex; align-items: center; gap: .3rem;
+    background: #0f3460; padding: .25rem .6rem; border-radius: 6px; font-size: .8rem;
+  }
+  .preset-tag .del { color: #e94560; cursor: pointer; font-weight: 700; margin-left: .2rem; }
+  .preset-tag .del:hover { color: #ff6b81; }
+  .preset-tag:hover { background: #1a4a8a; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>PTZ CAMERA</h1>
+  <div class="row">
+    <div class="cross">
+      <button class="up"    onclick="move(0,-15)">&#9650;</button>
+      <button class="left"  onclick="move(-15,0)">&#9664;</button>
+      <button class="mid"   onclick="">&#9678;</button>
+      <button class="right" onclick="move(15,0)">&#9654;</button>
+      <button class="down"  onclick="move(0,15)">&#9660;</button>
+    </div>
+    <div class="controls">
+      <div class="slider-group">
+        <label>Speed <span id="speedVal">45</span>&deg;/s</label>
+        <input type="range" id="speed" min="5" max="180" step="5" value="45"
+               oninput="document.getElementById('speedVal').textContent = this.value">
+      </div>
+      <div class="slider-group">
+        <label>Zoom <span id="zoomVal">1.0</span>&times;</label>
+        <input type="range" id="zoom" min="1" max="10" step="0.1" value="1"
+               onchange="sendState()" oninput="document.getElementById('zoomVal').textContent = this.value">
+      </div>
+      <div class="slider-group">
+        <label>Focus <span id="focusVal">50</span></label>
+        <input type="range" id="focus" min="0" max="100" step="1" value="50"
+               onchange="sendState()" oninput="document.getElementById('focusVal').textContent = this.value">
+      </div>
+      <div class="slider-group">
+        <label>Digital Crop <span id="cropVal">1.0</span>&times;</label>
+        <input type="range" id="crop" min="1" max="4" step="0.1" value="1"
+               onchange="sendState()" oninput="document.getElementById('cropVal').textContent = parseFloat(this.value).toFixed(1)">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="center()">Center</button>
+        <button class="btn btn-secondary" onclick="toggleVflip()" id="vflipBtn">V-Flip Off</button>
+        <button class="btn btn-secondary" onclick="savePreset()">Save Preset</button>
+        <button class="btn btn-danger" onclick="stop()">Stop</button>
+      </div>
+    </div>
+  </div>
+  <div class="preset-section">
+    <h3>Presets</h3>
+    <div class="preset-list" id="presetList"></div>
+  </div>
+  <div class="status-panel">
+    <div class="status-item">Pan <span id="panDisplay">--</span>&deg;</div>
+    <div class="status-item">Tilt <span id="tiltDisplay">--</span>&deg;</div>
+    <div class="status-item">Zoom <span id="zoomDisplay">--</span>&times;</div>
+    <div class="status-item">Focus <span id="focusDisplay">--</span></div>
+    <div class="status-item">Crop <span id="cropDisplay">1.0</span>&times;</div>
+    <div class="status-item">V-Flip <span id="vflipDisplay">Off</span></div>
+    <div class="status-item">Rotation <span id="rotationDisplay">0</span>&deg;</div>
+    <button class="btn btn-secondary" onclick="cycleRotation()" id="rotationBtn" style="margin-left:auto">Rotate 180</button>
+    <button class="btn btn-secondary" onclick="fetchStatus()">Refresh</button>
+  </div>
+</div>
+
+<script>
+let current = { pan: 90, tilt: 90, zoom: 1, focus: 50, vflip: false, digitalCrop: 1 };
+
+async function api(endpoint, opts = {}) {
+  const res = await fetch(endpoint, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+async function fetchStatus() {
+  try {
+    current = await api('/api/ptz/state');
+    document.getElementById('panDisplay').textContent = Math.round(current.pan);
+    document.getElementById('tiltDisplay').textContent = Math.round(current.tilt);
+    document.getElementById('zoomDisplay').textContent = current.zoom.toFixed(1);
+    document.getElementById('focusDisplay').textContent = current.focus;
+    document.getElementById('cropDisplay').textContent = (current.digitalCrop ?? 1).toFixed(1);
+    document.getElementById('vflipDisplay').textContent = current.vflip ? 'On' : 'Off';
+    document.getElementById('vflipBtn').textContent = current.vflip ? 'V-Flip On' : 'V-Flip Off';
+    document.getElementById('rotationDisplay').textContent = current.rotation ?? 0;
+    document.getElementById('rotationBtn').textContent = (current.rotation ?? 0) === 0 ? 'Rotate 180' : 'Rotate 0';
+    document.getElementById('zoom').value = current.zoom;
+    document.getElementById('focus').value = current.focus;
+    document.getElementById('crop').value = current.digitalCrop ?? 1;
+    document.getElementById('zoomVal').textContent = current.zoom.toFixed(1);
+    document.getElementById('focusVal').textContent = current.focus;
+    document.getElementById('cropVal').textContent = (current.digitalCrop ?? 1).toFixed(1);
+  } catch (e) { console.error('fetchStatus:', e); }
+}
+
+async function move(dPan, dTilt) {
+  const speed = parseInt(document.getElementById('speed').value, 10);
+  if (current.tilt > 90) { dPan = -dPan; dTilt = -dTilt; }
+  const pan = Math.min(180, Math.max(0, current.pan + dPan));
+  const tilt = Math.min(180, Math.max(0, current.tilt + dTilt));
+  try {
+    current = await api('/api/ptz/state', {
+      method: 'POST',
+      body: JSON.stringify({ pan, tilt, speed })
+    });
+    document.getElementById('panDisplay').textContent = Math.round(current.pan);
+    document.getElementById('tiltDisplay').textContent = Math.round(current.tilt);
+  } catch (e) { console.error('move:', e); }
+}
+
+async function sendState() {
+  const zoom = parseFloat(document.getElementById('zoom').value);
+  const focus = parseInt(document.getElementById('focus').value, 10);
+  const crop = parseFloat(document.getElementById('crop').value);
+  const speed = parseInt(document.getElementById('speed').value, 10);
+  try {
+    current = await api('/api/ptz/state', {
+      method: 'POST',
+      body: JSON.stringify({ pan: current.pan, tilt: current.tilt, zoom, focus, digitalCrop: crop, vflip: current.vflip, speed })
+    });
+    document.getElementById('zoomDisplay').textContent = current.zoom.toFixed(1);
+    document.getElementById('focusDisplay').textContent = current.focus;
+    document.getElementById('cropDisplay').textContent = (current.digitalCrop ?? 1).toFixed(1);
+  } catch (e) { console.error('sendState:', e); }
+}
+
+async function center() {
+  const speed = parseInt(document.getElementById('speed').value, 10);
+  try {
+    await api('/api/ptz/center', {
+      method: 'POST',
+      body: JSON.stringify({ speed })
+    });
+    current.pan = 90; current.tilt = 90;
+    document.getElementById('panDisplay').textContent = '90';
+    document.getElementById('tiltDisplay').textContent = '90';
+  } catch (e) { console.error('center:', e); }
+}
+
+async function stop() {
+  try {
+    await api('/api/ptz/stop', { method: 'POST' });
+  } catch (e) { console.error('stop:', e); }
+}
+
+async function savePreset() {
+  const name = prompt('Preset name:');
+  if (!name) return;
+  try {
+    await api('/api/ptz/presets', {
+      method: 'POST',
+      body: JSON.stringify({ name, pan: current.pan, tilt: current.tilt })
+    });
+    loadPresets();
+  } catch (e) { console.error('savePreset:', e); }
+}
+
+async function recallPreset(name) {
+  const speed = parseInt(document.getElementById('speed').value, 10);
+  try {
+    const r = await api(`/api/ptz/presets/${name}`, {
+      method: 'POST',
+      body: JSON.stringify({ speed })
+    });
+    current.pan = r.pan; current.tilt = r.tilt;
+    document.getElementById('panDisplay').textContent = Math.round(r.pan);
+    document.getElementById('tiltDisplay').textContent = Math.round(r.tilt);
+  } catch (e) { console.error('recallPreset:', e); }
+}
+
+async function deletePreset(name) {
+  try {
+    await fetch(`/api/ptz/presets/${name}`, { method: 'DELETE' });
+    loadPresets();
+  } catch (e) { console.error('deletePreset:', e); }
+}
+
+async function loadPresets() {
+  try {
+    const list = await api('/api/ptz/presets');
+    const el = document.getElementById('presetList');
+    el.innerHTML = '';
+    for (const [name, data] of Object.entries(list)) {
+      const tag = document.createElement('span');
+      tag.className = 'preset-tag';
+      tag.onclick = () => recallPreset(name);
+      tag.innerHTML = `${name} <span class="del" onclick="event.stopPropagation();deletePreset('${name}')">&times;</span>`;
+      el.appendChild(tag);
+    }
+  } catch (e) { console.error('loadPresets:', e); }
+}
+
+async function cycleRotation() {
+  const next = { 0: 180, 180: 0 };
+  const currentRot = current.rotation || 0;
+  const target = next[currentRot] ?? 0;
+  try {
+    const res = await fetch('/api/ptz/option', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `rotation=${target}`
+    });
+    const state = await res.json();
+    current.rotation = state.rotation;
+    document.getElementById('rotationDisplay').textContent = state.rotation;
+    document.getElementById('rotationBtn').textContent = state.rotation === 0 ? 'Rotate 180' : 'Rotate 0';
+  } catch (e) { console.error('rotation:', e); }
+}
+
+async function toggleVflip() {
+  const next = !current.vflip;
+  try {
+    const res = await fetch('/api/ptz/option', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `vflip=${next}`
+    });
+    const state = await res.json();
+    current.vflip = state.vflip;
+    document.getElementById('vflipDisplay').textContent = state.vflip ? 'On' : 'Off';
+    document.getElementById('vflipBtn').textContent = state.vflip ? 'V-Flip On' : 'V-Flip Off';
+  } catch (e) { console.error('vflip:', e); }
+}
+
+window.onload = () => { fetchStatus(); loadPresets(); };
+</script>
+</body>
+</html>

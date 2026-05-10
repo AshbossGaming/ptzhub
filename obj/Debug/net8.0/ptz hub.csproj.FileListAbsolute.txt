@@ -1,0 +1,30 @@
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\appsettings.Development.json
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\appsettings.json
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\ptz hub.staticwebassets.runtime.json
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\ptz hub.exe
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\ptz hub.deps.json
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\ptz hub.runtimeconfig.json
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\ptz hub.dll
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\ptz hub.pdb
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.AssemblyInfoInputs.cache
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.AssemblyInfo.cs
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.csproj.CoreCompileInputs.cache
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\staticwebassets.build.json
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\staticwebassets.development.json
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\staticwebassets\msbuild.ptz hub.Microsoft.AspNetCore.StaticWebAssets.props
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\staticwebassets\msbuild.build.ptz hub.props
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.ptz hub.props
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.ptz hub.props
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\staticwebassets.pack.json
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\scopedcss\bundle\ptz hub.styles.css
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.dll
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\refint\ptz hub.dll
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.pdb
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.genruntimeconfig.cache
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ref\ptz hub.dll
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\presets.json
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\bin\Debug\net8.0\System.Device.Gpio.dll
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.csproj.AssemblyReference.cache
+C:\Users\ash12\RiderProjects\ptz hub\ptz hub\obj\Debug\net8.0\ptz hub.csproj.Up2Date
